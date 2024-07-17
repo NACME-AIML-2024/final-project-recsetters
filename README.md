@@ -11,10 +11,9 @@ List all of the members who developed the project and
 link to each members respective GitHub profile
 -->
 Developed by: 
-- [member1](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY`
-- [member2](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY` 
-- [member3](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY` 
-- [member4](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY`
+- [Alline Ayala](https://github.com/ayalaa04) - `Electronic Systems Engineering Technology` - `Texas A&M`
+- [Noah Teckle](https://github.com/nteckle99) - `Electrical` - `University of Southern California` 
+- [Jonathan Haile](https://github.com/jonathanhaile1) - `Computer Science and Business Administration` - `University of Southern California` 
 
 ## Description
 <!--
