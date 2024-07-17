@@ -27,4 +27,7 @@ Give details on how to install fork and install your project. You can get all of
 1. Fork this repo
 2. Change directories into your project
 3. On the command line, type `pip3 install requirements.txt`
-4. ....
+4. Create a .env file in the data_collection directory
+5. Add the following line, with your Last Fm Api Key: LASTFM_API_KEY=YOUR_API_KEY
+6. Add ".env" to .gitignore
+7. pip install python-dotenv
