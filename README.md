@@ -31,3 +31,4 @@ Give details on how to install fork and install your project. You can get all of
 5. Add the following line, with your Last Fm Api Key: LASTFM_API_KEY=YOUR_API_KEY
 6. Add ".env" to .gitignore
 7. pip install python-dotenv
+8. Download [Apple Music Dataset](https://www.kaggle.com/datasets/kanchana1990/apple-music-dataset-10000-tracks-uncovered) into data_collection/DATASET
