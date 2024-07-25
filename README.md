@@ -11,10 +11,9 @@ List all of the members who developed the project and
 link to each members respective GitHub profile
 -->
 Developed by: 
-- [member1](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY`
-- [member2](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY` 
-- [member3](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY` 
-- [member4](https://github.com/cbaker6) - `MAJOR` - `STUDENTS_UNIVERSITY`
+- [Alline Ayala](https://github.com/ayalaa04) - `Electronic Systems Engineering Technology` - `Texas A&M`
+- [Noah Teckle](https://github.com/nteckle99) - `Electrical` - `University of Southern California` 
+- [Jonathan Haile](https://github.com/jonathanhaile1) - `Computer Science and Business Administration` - `University of Southern California` 
 
 ## Description
 <!--
@@ -28,4 +27,8 @@ Give details on how to install fork and install your project. You can get all of
 1. Fork this repo
 2. Change directories into your project
 3. On the command line, type `pip3 install requirements.txt`
-4. ....
+4. Create a .env file in the data_collection directory
+5. Add the following line, with your Last Fm Api Key: LASTFM_API_KEY=YOUR_API_KEY
+6. Add ".env" to .gitignore
+7. pip install python-dotenv
+8. Download [Apple Music Dataset](https://www.kaggle.com/datasets/kanchana1990/apple-music-dataset-10000-tracks-uncovered) into data_collection/DATASET
