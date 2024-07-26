@@ -3,12 +3,9 @@ import requests
 
 
 API_KEY = '5fae7208288b136b5a2306d078847c4f'
-SHARED_SECRET = '00e92aefc3ae823055da97f8865b6e6f'
-APPLICATION_NAME = 'RecSetters'
-REGISTERED_TO = 'noahtekle98'
 
 
-df = pd.read_csv("apple_music_dataset.csv")
+df = pd.read_csv("../data_collection/DATASET/apple_music_dataset.csv")
 print(df.columns)
 specific_columns = ['artistName','trackName']
 # Filter rows where trackName is not 'Music'
@@ -66,4 +63,4 @@ df_apple_music = df_apple_music.drop_duplicates(subset=['artistName', 'trackName
 # Reset index
 df_apple_music = df_apple_music.reset_index(drop=True)
 # Save to CSV
-df_apple_music.to_csv('items.csv', index=False)
+df_apple_music.to_csv('../data_collection/apple_items.csv', index=False)

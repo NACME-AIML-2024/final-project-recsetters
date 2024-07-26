@@ -52,7 +52,7 @@ def fetch_friends_info(username, seen_users, limit=200):
 initial_username = 'RJ'  # Initial user to start fetching data
 user_data = []
 seen_users = set()
-num_users = 8000  # Change this value to modify the number of users fetched
+num_users = 5000  # Change this value to modify the number of users fetched
 
 # Fetch initial user’s info
 initial_user_info = get_user_info(initial_username)
@@ -81,7 +81,7 @@ final_user_data = user_data[:num_users]
 
 # Save user data to CSV
 df_user = pd.DataFrame(final_user_data)
-df_user.to_csv('user_info.csv', index=False)
+df_user.to_csv('../data_collection/DATASET/user_info.csv', index=False)
 print(f"Found {len(df_user)} unique users.")
 
 # Fetch and process loved tracks for each user
@@ -131,4 +131,4 @@ for i in range(len(df_user)):
 df_user = df_user.drop(indices_to_drop).reset_index(drop=True)
 
 # Save updated user data to CSV
-df_user.to_csv('user.csv', index=False)
+df_user.to_csv('../data_collection/DATASET/user.csv', index=False)
