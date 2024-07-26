@@ -1,14 +1,16 @@
 import pandas as pd
-import ast
-
 
 # Load CSV data
-df_user = pd.read_csv('../data_collection/DATASET/user.csv')
-df_apple_music = pd.read_csv('../data_collection/DATASET/apple_music_dataset.csv')
+df_user = pd.read_csv('data_collection/user.csv')
+df_apple_music = pd.read_csv('data_collection/items.csv')
 
 # Assign IDs to DataFrames
 df_apple_music['id'] = range(1, len(df_apple_music) + 1)
 df_user['id'] = range(1, len(df_user) + 1)
+
+# Save the new dataframes with ids
+df_items_with_ids = df_apple_music.copy()
+df_users_with_ids = df_user.copy()
 
 # Create a dictionary mapping track names to IDs
 trackname_to_id = pd.Series(df_apple_music['id'].values, index=df_apple_music['trackName']).to_dict()
@@ -113,13 +115,13 @@ df_result.sort_values(by=['username', 'date_time'], ascending=[True, True], inpl
 
 # Reset index if needed
 df_result.reset_index(drop=True, inplace=True)
-df_result.to_csv('../data_collection/DATASET/ratings.csv', index=False)
+df_result.to_csv('ratings2.csv', index=False)
 
-# Print skipped songs
-print("Skipped Songs:", len(skipped_songs))
+# # Print skipped songs
+# print("Skipped Songs:", len(skipped_songs))
 
 df_result.sort_values(by=['username', 'date_time'], ascending=[True, True], inplace=True)
 
 # Reset index if needed
 df_result.reset_index(drop=True, inplace=True)
-print('Df result:\n', df_result)
+# print('Df result:\n', df_result)
