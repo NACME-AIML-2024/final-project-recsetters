@@ -34,15 +34,14 @@ def extract_track_names(loved_tracks_str):
     except (ValueError, SyntaxError):
         return []
 
-df_interactions = pd.read_csv('data_collection/ratings2.csv')
+df_interactions = pd.read_csv('data_collection/apple_interactions.csv')
 df_users_with_ids = pd.read_csv('data_collection/user.csv')
-df_items_with_ids = pd.read_csv('data_collection/items.csv')
+df_items_with_ids = pd.read_csv('data_collection/apple_items.csv')
 df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
 df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
 
 
 def readmusic(df_user, df_items, df_interactions, user_core=5, item_core=5):
-    df_interactions.to_csv('debugging.csv', index=False)
     # Map user names to IDs
     user_name_to_id = {name: user_id for name, user_id in zip(df_user['name'], df_user['id'])}
     df_interactions['user_id'] = df_interactions['username'].map(user_name_to_id)
@@ -90,7 +89,6 @@ def readmusic(df_user, df_items, df_interactions, user_core=5, item_core=5):
     # Ensure valid track IDs are in df_items
     df_interactions = df_interactions[df_interactions['track_id'].isin(df_items['id'])]
 
-    # pdb.set_trace()
 
     # Convert user data to categorical
     username = df_user['name'].to_numpy().astype(str).tolist()
@@ -110,7 +108,6 @@ def readmusic(df_user, df_items, df_interactions, user_core=5, item_core=5):
             'username': reindexed_username,
             'country': reindexed_country
         }
-        #print(reindexed_username)
     
     #-------- Item data processing:
     track_ids = df_items['id'].to_numpy().astype(str).tolist()

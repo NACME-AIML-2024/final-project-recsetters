@@ -92,4 +92,4 @@ while True:
 
 # Reset index if needed
 df_result.reset_index(drop=True, inplace=True)
-df_result.to_csv('apple_interactions.csv', index=False)
+df_result.to_csv('../data_collection/apple_interactions.csv', index=False)

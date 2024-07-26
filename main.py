@@ -62,15 +62,12 @@ def batch_to_device_tracks(user_feats, item_feats, device):
 
 
 def train_tracks():
-    # device = FLAGS.device       # here
-    df_interactions = pd.read_csv('data_collection/ratings2.csv')
+    df_interactions = pd.read_csv('data_collection/apple_interactions.csv')
     df_users_with_ids = pd.read_csv('data_collection/user.csv')
-    df_items_with_ids = pd.read_csv('data_collection/items.csv')
+    df_items_with_ids = pd.read_csv('data_collection/apple_items.csv')
     df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
     df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
     x, y, user_data, item_data, interaction_data, num_tags, num_artists, num_countries = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
-
-    # df_interactions, df_items, user_data, item_data, sorted_reindexed_interactions_by_key
 
     ml_graph = MusicInteractionGraph(user_data, item_data, interaction_data, warm_threshold=0.2)
     ml_graph.compute_tail_distribution()
@@ -118,12 +115,6 @@ def train_tracks():
             scores = ml_sparseNN(user_ids, user_countries, user_names,
                                  track_ids, track_artist, track_tags, track_names).flatten()
             current_batch_size = int(user_ids.shape[0] / ((2 * FLAGS.num_negatives) + 1))
-
-            # Add print statements to debug tensor sizes
-            #print(f"scores[:current_batch_size].shape: {scores[:current_batch_size].shape}")
-            #print(f"scores[:current_batch_size].repeat_interleave(2 * FLAGS.num_negatives).shape: {scores[:current_batch_size].repeat_interleave(2 * FLAGS.num_negatives).shape}")
-            #print(f"scores[current_batch_size:].shape: {scores[current_batch_size:].shape}")
-            #print(f"current_batch_size: {current_batch_size}")
 
             loss = loss_fn(scores[:current_batch_size].repeat_interleave(2 * FLAGS.num_negatives), scores[current_batch_size:], y)
             loss.backward()
