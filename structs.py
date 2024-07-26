@@ -80,19 +80,15 @@ class MusicInteractionGraph(InteractionGraph):
         self.compute_tail_distribution()
     
     def create_data_split(self):
-            # pdb.set_trace()
             # Leave one out validation - for each user the latest interaction is a test item and the second latest item is the validation item
-            #print('Creating data split')
             self.all_edges = set()
             self.train_edges_set = set()
             for user_id in tqdm(self.interaction_data):
                     sorted_interactions = sorted(self.interaction_data[user_id], key=lambda x : x[1])
-                    # pdb.set_trace()
                     test_edge = [user_id, sorted_interactions[-1][0]]
                     val_edge = [user_id, sorted_interactions[-2][0]]
                     self.all_edges.add((user_id, sorted_interactions[-2][0]))
 
-                    #print(user_id)
 
                     train_edges = [[user_id, interaction[0]] for interaction in sorted_interactions[:-2]]
                     for interaction in sorted_interactions[:-2]:
@@ -102,7 +98,7 @@ class MusicInteractionGraph(InteractionGraph):
                     self.train_edges += train_edges
                     self.validation_edges.append(val_edge)
                     self.test_edges.append(test_edge)
-            # pdb.set_trace()
+
             self.train_edges = np.array(self.train_edges)
             self.validation_edges = np.array(self.validation_edges)
             self.test_edges = np.array(self.test_edges)
@@ -120,38 +116,3 @@ class MusicInteractionGraph(InteractionGraph):
 
 # Initialize the MusicInteractionGraph with the loaded data
 graph = MusicInteractionGraph(user_data, item_data, sorted_reindexed_interactions_by_key, warm_threshold=0.2)
-
-# # Check some of the results
-# print("Train edges:\n", graph.train_edges[:5])
-# print("Validation edges:\n", graph.validation_edges[:5])
-# print("Test edges:\n", graph.test_edges[:5])
-
-# print("Adjacency matrix:\n", graph.adj_matrix[:5])
-
-# # graph.split_statistics()
-# import networkx as nx
-# import matplotlib.pyplot as plt
-
-# # Sample a smaller subset of interactions for visualization
-# sampled_users = random.sample(list(user_data.keys()), 3)  # Sample 3 users
-# sampled_items = random.sample(list(item_data.keys()), 3)  # Sample 3 items
-
-# sampled_interaction_data = {user: interactions for user, interactions in sorted_reindexed_interactions_by_key.items() if user in sampled_users}
-# sampled_edges = [(user, item) for user in sampled_interaction_data for item, _ in sampled_interaction_data[user] if item in sampled_items]
-
-# # Plotting the interaction graph using NetworkX
-# B = nx.Graph()
-
-# # Add nodes with the node attribute "bipartite"
-# B.add_nodes_from(sampled_users, bipartite=0)
-# B.add_nodes_from(sampled_items, bipartite=1)
-
-# # Add edges (interactions)
-# B.add_edges_from(sampled_edges)
-
-# # Plot the bipartite graph
-# pos = nx.drawing.layout.bipartite_layout(B, sampled_users)
-# plt.figure(figsize=(10, 8))
-# nx.draw(B, pos, with_labels=True, node_color=['skyblue' if node in sampled_users else 'lightgreen' for node in B.nodes()], node_size=500, font_size=10)
-# plt.title('Sampled Interaction Graph (Bipartite Layout)')
-# plt.show()

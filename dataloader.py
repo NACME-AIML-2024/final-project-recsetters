@@ -171,42 +171,4 @@ class TrackUsersCollator:
         user_names = torch.as_tensor(user_feats_by_type[2], dtype=torch.int64)
         return (user_ids, user_countries,user_names)
 
-
-
-
-
-# track_dataset = TrackDataset(graph)
-
-# track_collator = TrackCollator(track_dataset, mode='train')
-
-# track_interference_dataset = TrackInferenceItemsDataset(track_dataset)
-
-# track_items = TrackItemsCollator(track_dataset)
-
-# track_interference_users = TrackInferenceUsersDataset(track_dataset)
-
-# track_users = TrackUsersCollator(track_dataset)
-
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-# if __name__ == "__main__":
-#     df_interactions = pd.read_csv('ratings2.csv')
-#     df_users_with_ids = pd.read_csv('user.csv')
-#     df_items_with_ids = pd.read_csv('items.csv')
-#     df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
-#     df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
-
-#     # x, y, user_data, item_data, interaction_data = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
-
-#     # df_interactions, df_items, user_data, item_data, sorted_reindexed_interactions_by_key
-
-#     ml_graph = MusicInteractionGraph(user_data, item_data, interaction_data, warm_threshold=0.2)
-#     ml_graph.compute_tail_distribution()
-#     ml_graph.split_statistics()
-#     ml_dataset_train = TrackDataset(ml_graph, mode='train')
-#     ml_collator_train = TrackCollator(ml_graph, mode='train', num_neg_samples=1)
-#     ml_dataloader_train = DataLoader(ml_dataset_train, batch_size=512, collate_fn=ml_collator_train, num_workers=0, shuffle=True, pin_memory=True)
-#     for i, (user_feats, item_feats) in enumerate(tqdm(ml_dataloader_train)):
-#         # user_feats, item_feats = batch_to_device_ml(user_feats, item_feats, device)
-#         print(f"Processed batch {i}")
-#         pdb.set_trace()

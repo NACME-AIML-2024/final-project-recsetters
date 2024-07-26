@@ -63,4 +63,4 @@ df_apple_music = df_apple_music.drop_duplicates(subset=['artistName', 'trackName
 # Reset index
 df_apple_music = df_apple_music.reset_index(drop=True)
 # Save to CSV
-df_apple_music.to_csv('../data_collection/DATASET/items.csv', index=False)
+df_apple_music.to_csv('../data_collection/DATASET/apple_items.csv', index=False)

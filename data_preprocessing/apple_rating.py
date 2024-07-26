@@ -2,7 +2,7 @@ import pandas as pd
 
 # Load CSV data
 df_user = pd.read_csv('data_collection/user.csv')
-df_apple_music = pd.read_csv('data_collection/items.csv')
+df_apple_music = pd.read_csv('data_collection/apple_items.csv')
 
 # Assign IDs to DataFrames
 df_apple_music['id'] = range(1, len(df_apple_music) + 1)
@@ -12,14 +12,10 @@ df_user['id'] = range(1, len(df_user) + 1)
 df_items_with_ids = df_apple_music.copy()
 df_users_with_ids = df_user.copy()
 
-# Create a dictionary mapping track names to IDs
-trackname_to_id = pd.Series(df_apple_music['id'].values, index=df_apple_music['trackName']).to_dict()
+# Create a dictionary mapping track IDs to track names
+id_to_trackname = pd.Series(df_apple_music['trackName'].values, index=df_apple_music['id']).to_dict()
 
-id_lst = []
-index_count = {}
 df_lst = []
-skipped_songs = []
-missing_users = []
 
 for i in range(len(df_user)):
     loved_tracks_str = df_user.loc[i, 'loved_tracks']
@@ -27,7 +23,7 @@ for i in range(len(df_user)):
     
     start_marker = "'track_name': '"
     end_marker = "',"
-    start_marker_2 = "'#text': '"
+    start_marker_2 = "'uts': '"
     end_marker_2 = "'"
     
     track_names = []
@@ -62,15 +58,7 @@ for i in range(len(df_user)):
 
     for name, date in zip(track_names, date_times):
         if name in df_apple_music['trackName'].values:
-            index = df_apple_music.index[df_apple_music['trackName'] == name].tolist()[0]
-            id_lst = [username, name, date]
-            if index in index_count:
-                index_count[index] += 1
-            else:
-                index_count[index] = 1
-            df_lst.append(id_lst)
-        else:
-            skipped_songs.append(name)
+            df_lst.append([username, name, date])
 
 # Create DataFrame from the extracted data
 df_result = pd.DataFrame(df_lst, columns=['username', 'track_name', 'date_time'])
@@ -78,9 +66,15 @@ df_result = pd.DataFrame(df_lst, columns=['username', 'track_name', 'date_time']
 # Remove rows where track_name is "Unknown"
 df_result = df_result[df_result['track_name'] != 'Unknown']
 
-df_result = df_result.drop_duplicates(subset=['username','track_name'], keep='last').reset_index(drop=True)
+# Drop duplicates
+df_result = df_result.drop_duplicates(subset=['username', 'track_name'], keep='last').reset_index(drop=True)
+
+# Convert 'date_time' to Unix time (assuming 'date_time' is already in Unix format as string)
+df_result['date_time'] = pd.to_numeric(df_result['date_time'], errors='coerce')
 
 # Filter interactions based on the given criteria
+index_count = df_result['track_name'].value_counts().to_dict()
+
 while True:
     song_lst = [track for track, count in index_count.items() if count < 5]
     df_result = df_result[~df_result['track_name'].isin(song_lst)]
@@ -96,32 +90,6 @@ while True:
     updated_track_count = df_result['track_name'].value_counts()
     index_count = updated_track_count.to_dict()
 
-# Check if every username in df_result is in df_user
-for username in df_result['username'].unique():
-    if username not in df_user['name'].values:
-        missing_users.append(username)
-
-# Log the missing users
-if missing_users:
-    print("Missing Users:")
-    for user in missing_users:
-        print(user)
-
-# Convert 'date_time' to Unix time
-df_result['date_time'] = pd.to_datetime(df_result['date_time'], format='%d %b %Y, %H:%M').astype('int64') // 10**9
-
-# Sort the DataFrame by 'username' and 'date_time'
-df_result.sort_values(by=['username', 'date_time'], ascending=[True, True], inplace=True)
-
 # Reset index if needed
 df_result.reset_index(drop=True, inplace=True)
-df_result.to_csv('ratings2.csv', index=False)
-
-# # Print skipped songs
-# print("Skipped Songs:", len(skipped_songs))
-
-df_result.sort_values(by=['username', 'date_time'], ascending=[True, True], inplace=True)
-
-# Reset index if needed
-df_result.reset_index(drop=True, inplace=True)
-# print('Df result:\n', df_result)
+df_result.to_csv('apple_interactions.csv', index=False)

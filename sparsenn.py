@@ -114,7 +114,6 @@ class TrackSparseNNItemModel(nn.Module):
         self.track_id_embeddings = nn.Embedding(num_track_ids, feat_embed_dim)
         self.artists_embeddings = nn.Embedding(num_track_artists, feat_embed_dim)
         self.tags_embeddings = nn.Embedding(num_track_tags, feat_embed_dim)
-       # self.track_name_embeddings = nn.Embedding(num_track_names, feat_embed_dim)
         self.dense_transform = nn.Linear(dense_feat_input_dim, feat_embed_dim)
 
         self.output_embed_dim = output_embed_dim
@@ -140,7 +139,6 @@ class TrackSparseNNItemModel(nn.Module):
         track_id_embeddings = self.track_id_embeddings(track_ids)
         artists_embeddings = self.artists_embeddings(track_artists)
         tags_embeddings = self.tags_embeddings(track_tags)
-        # track_name_embeddings = self.track_name_embeddings(track_names)
         dense_embeddings = self.act(self.dense_transform(track_names))
 
 
@@ -196,4 +194,3 @@ class TrackSparseNN(nn.Module):
             
         
         return self.act(self.scoring_model(user_embeddings, item_embeddings))
-#endregion

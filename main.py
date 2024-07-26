@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("dataset_dir", 'PATH/TO/DATASETS', "directory to store and load datasets from")
-flags.DEFINE_string("dataset", "tracks", "Dataset to use")  # changed ml to tracks
+flags.DEFINE_string("dataset", "tracks", "Dataset to use")
 flags.DEFINE_string("device", "cpu", "Specify whether to use the CPU or GPU")
 flags.DEFINE_integer("batch_size", 64, "Batch Size")
 flags.DEFINE_integer("item_inference_batch_size", 512, "Batch size to load items when computing all item representations before inference")
@@ -68,7 +68,7 @@ def train_tracks():
     df_items_with_ids = pd.read_csv('data_collection/items.csv')
     df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
     df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
-    x, y, user_data, item_data, interaction_data, num_tags = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
+    x, y, user_data, item_data, interaction_data, num_tags, num_artists, num_countries = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
 
     # df_interactions, df_items, user_data, item_data, sorted_reindexed_interactions_by_key
 
@@ -92,11 +92,11 @@ def train_tracks():
     
     ml_sparseNN = TrackSparseNN(
         num_user_ids=len(user_data),
-        num_user_countries=118, 
+        num_user_countries=num_countries, 
         num_user_names=len(user_data),
 
         num_track_ids=len(item_data),
-        num_track_artists=749,
+        num_track_artists=num_artists,
         num_track_tags=num_tags,
         num_track_names=len(item_data)
 
@@ -298,7 +298,7 @@ def inference(model,
     model.train()
     return hitrate_k_combined, ndcg_k_combined, hitrate_k_cold, ndcg_k_cold, hitrate_k_warm, ndcg_k_warm
 
-        # Need to compute ranking metrics
+
 
 def main(argv):
     if FLAGS.wandb_logging:
