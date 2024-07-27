@@ -8,7 +8,8 @@ from random import random, shuffle
 import random
 import pdb
 
-from datareader import df_interactions_processed, df_items_processed, user_data, item_data, sorted_reindexed_interactions_by_key
+from apple_datareader import df_interactions_processed, df_items_processed, user_data, item_data, sorted_reindexed_interactions_by_key
+from spotify_data_reader import df_interactions_processed, df_items_processed, user_data, item_data, sorted_reindexed_interactions_by_key
 
 
 class InteractionGraph:
