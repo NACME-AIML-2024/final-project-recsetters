@@ -1,7 +1,7 @@
 import copy
 import pickle
 from structs import InteractionGraph, MusicInteractionGraph
-from datareader import readmusic
+from apple_datareader import readmusic
 from sparsenn import TrackSparseNN
 import pandas as pd
 
@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("dataset_dir", 'PATH/TO/DATASETS', "directory to store and load datasets from")
-flags.DEFINE_string("dataset", "tracks", "Dataset to use")
+flags.DEFINE_string("dataset", "tracks", "Dataset to use")  # apple_tracks or spotify_tracks
 flags.DEFINE_string("device", "cpu", "Specify whether to use the CPU or GPU")
 flags.DEFINE_integer("batch_size", 64, "Batch Size")
 flags.DEFINE_integer("item_inference_batch_size", 512, "Batch size to load items when computing all item representations before inference")
@@ -61,10 +61,107 @@ def batch_to_device_tracks(user_feats, item_feats, device):
     return (user_ids, user_countries, user_names), (track_ids, track_artist, track_tags, track_names)
 
 
-def train_tracks():
+def train_apple_tracks():
     df_interactions = pd.read_csv('data_collection/apple_interactions.csv')
     df_users_with_ids = pd.read_csv('data_collection/user.csv')
     df_items_with_ids = pd.read_csv('data_collection/apple_items.csv')
+    df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
+    df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
+    x, y, user_data, item_data, interaction_data, num_tags, num_artists, num_countries = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
+
+    ml_graph = MusicInteractionGraph(user_data, item_data, interaction_data, warm_threshold=0.2)
+    ml_graph.compute_tail_distribution()
+    ml_graph.split_statistics()
+    ml_dataset_train = TrackDataset(ml_graph, mode='train')
+    ml_collator_train = TrackCollator(ml_graph, mode='train', num_neg_samples=FLAGS.num_negatives)
+    ml_dataloader_train = DataLoader(ml_dataset_train, batch_size=512, collate_fn=ml_collator_train, num_workers=FLAGS.num_workers, shuffle=True, pin_memory=True)
+
+    ml_dataset_val = TrackDataset(ml_graph, mode='test')
+    ml_collator_val = TrackCollator(ml_graph, mode='test')
+    ml_dataloader_val = DataLoader(ml_dataset_val, batch_size=FLAGS.batch_size, collate_fn=ml_collator_val, num_workers=FLAGS.num_workers, pin_memory=True)
+    ml_inference_users_dataset = TrackInferenceUsersDataset(ml_graph)
+    ml_users_collator = TrackUsersCollator(ml_graph)
+    ml_inference_users_dataloader = DataLoader(ml_inference_users_dataset, batch_size=FLAGS.item_inference_batch_size, collate_fn=ml_users_collator, num_workers=FLAGS.num_workers, pin_memory=True)
+    ml_inference_items_dataset = TrackInferenceItemsDataset(ml_graph)
+    ml_items_collator = TrackItemsCollator(ml_graph)
+    ml_inference_items_dataloader = DataLoader(ml_inference_items_dataset, batch_size=FLAGS.item_inference_batch_size, collate_fn=ml_items_collator, num_workers=FLAGS.num_workers, pin_memory=True)
+    device = torch.device(0) if (torch.cuda.is_available() and FLAGS.device == 'gpu') else torch.device('cpu')
+    
+    ml_sparseNN = TrackSparseNN(
+        num_user_ids=len(user_data),
+        num_user_countries=num_countries, 
+        num_user_names=len(user_data),
+
+        num_track_ids=len(item_data),
+        num_track_artists=num_artists,
+        num_track_tags=num_tags,
+        num_track_names=len(item_data)
+
+    ).to(device)
+    loss_fn = torch.nn.MarginRankingLoss(margin=FLAGS.margin)
+    y = torch.tensor([1], device=device)
+    optimizer = torch.optim.Adam(ml_sparseNN.parameters(), lr=FLAGS.lr)
+    avg_loss = 0
+    num_samples = 0
+    best_hr, best_ndcg = 0, 0
+    corr_cold_hr, corr_warm_hr, corr_cold_ndcg, corr_warm_ndcg = 0, 0, 0, 0
+    for epoch in range(FLAGS.epochs):
+        print('Epoch Number:',epoch)
+        for i, (user_feats, item_feats) in enumerate(tqdm(ml_dataloader_train)):
+            user_feats, item_feats = batch_to_device_tracks(user_feats, item_feats, device)
+            optimizer.zero_grad()
+            user_ids, user_countries, user_names = user_feats
+            track_ids, track_artist, track_tags, track_names = item_feats
+            scores = ml_sparseNN(user_ids, user_countries, user_names,
+                                 track_ids, track_artist, track_tags, track_names).flatten()
+            current_batch_size = int(user_ids.shape[0] / ((2 * FLAGS.num_negatives) + 1))
+
+            loss = loss_fn(scores[:current_batch_size].repeat_interleave(2 * FLAGS.num_negatives), scores[current_batch_size:], y)
+            loss.backward()
+            optimizer.step()
+            avg_loss += loss.cpu().item()       # here
+            num_samples += current_batch_size
+            if FLAGS.wandb_logging:
+                wandb.log({
+                    "Loss" : loss.cpu().item()  #here
+                })
+            if (i + 1) % FLAGS.print_freq == 0:
+                avg_loss = avg_loss / num_samples
+                print(f"Epoch {epoch}, Iteration {i+1} / {len(ml_dataloader_train)} - Average loss per sample = {avg_loss} ")
+                avg_loss = 0
+                num_samples = 0
+        if (epoch + 1) % FLAGS.test_freq == 0:
+            hr, ndcg, hr_cold, ndcg_cold, hr_warm, ndcg_warm = inference(ml_sparseNN, ml_inference_items_dataloader, ml_inference_users_dataloader, ml_dataloader_val, device)
+            if hr > best_hr:
+                best_hr = hr
+                corr_cold_hr = hr_cold
+                corr_warm_hr = hr_warm
+            if ndcg > best_ndcg:
+                best_ndcg = ndcg
+                corr_cold_ndcg = ndcg_cold
+                corr_warm_ndcg = ndcg_warm
+            if FLAGS.wandb_logging:
+                wandb.log({
+                    "Overall HR" : hr,
+                    "Cold HR" : hr_cold,
+                    "Warm HR" : hr_warm,
+                    "Cold NDCG" : ndcg_cold,
+                    "Warm NDCG" : ndcg_warm,
+                })
+            print(f"Best HR so far = {best_hr}, Best NDCG so far {best_ndcg}")
+            print(f"Corresponding (Warm, Cold) Hit Rate = ({corr_warm_hr}, {corr_cold_hr}), Corresponding (Warm. Cold) NDCG = ({corr_warm_ndcg},{corr_cold_ndcg})")
+
+def train_spotify_tracks():
+    df_interactions = pd.read_csv('data_collection/spotifies_interactions.csv')
+    df_interactions = df_interactions.drop('song_summary', axis=1)
+
+    df_interactions = df_interactions.rename(columns={
+    'name': 'username',      # No change needed here
+    'trackName': 'track_name',   # Rename 'track_name' to 'song_name'
+    'date_time': 'date_time'     # Rename 'date_time' to 'timestamp'
+    })
+    df_users_with_ids = pd.read_csv('data_collection/user.csv')
+    df_items_with_ids = pd.read_csv('data_collection/spotify_items.csv')
     df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
     df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
     x, y, user_data, item_data, interaction_data, num_tags, num_artists, num_countries = readmusic(df_users_with_ids, df_items_with_ids, df_interactions)
@@ -158,7 +255,7 @@ def inference(model,
               user_loader : DataLoader,
               val_loader : DataLoader, 
               device : torch.device,
-              dataset="tracks",
+              dataset='spotify_tracks', #TODO: ---> change this to 'spotify_tracks' or 'apple_tracks'
               k=10):
 
     def compute_all_user_representations_tracks():
@@ -204,7 +301,9 @@ def inference(model,
 
     model.eval()
 
-    if dataset == 'tracks':
+    if dataset == 'apple_tracks':
+        user_representations, item_representations = compute_all_user_representations_tracks(), compute_all_item_representations_tracks()
+    elif dataset == 'spotify_tracks':
         user_representations, item_representations = compute_all_user_representations_tracks(), compute_all_item_representations_tracks()
 
     topk, topk_cold, topk_warm = [], [], []
@@ -309,8 +408,10 @@ def main(argv):
     torch.manual_seed(FLAGS.seed)
     random.seed(FLAGS.seed)
 
-    if FLAGS.dataset == 'tracks':
-        train_tracks()
+    if FLAGS.dataset == 'apple_tracks':
+        train_apple_tracks()
+    elif FLAGS.dataset == 'spotify_tracks':
+        train_spotify_tracks()
 
 
 

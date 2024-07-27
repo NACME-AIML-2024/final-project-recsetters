@@ -4,16 +4,16 @@ import torch.nn as nn
 import pdb
 
 class MLP(nn.Module):   # multi layer perceptron, takes input features. Each node represents one feature
-    def __init__(self, dims: List[int], add_bias=True, act="gelu", apply_layernorm=False, elemwise_affine=False):
+    def __init__(self, dims: List[int], add_bias=True, act="gelu", apply_layernorm=False, elemwise_affine=False):   # use gelu activation function
         super().__init__()
-        self._activation = self._get_activation(act)
+        self._activation = self._get_activation(act)    # apply activation function
         self._apply_layernorm = apply_layernorm
-        self._elemwise_affine = elemwise_affine
-        self._add_bias = add_bias
+        self._elemwise_affine = elemwise_affine # boolean to determine the normalization of each layer
+        self._add_bias = add_bias   # boolean to add bias to each layer
         self._model = self._create_model(dims)
 
     def _create_model(self, dims):
-        layers = nn.ModuleList()
+        layers = nn.ModuleList()    # to store the layers of the model
         for i in range(1, len(dims)):
             layer = nn.Linear(dims[i-1], dims[i]) if self._add_bias else nn.Linear(dims[i-1], dims[i], bias=False)
             layers.append(layer)
@@ -42,7 +42,7 @@ class MLP(nn.Module):   # multi layer perceptron, takes input features. Each nod
     def forward(self, input):
         return self._model(input)
 
-class DotCompressScoringModel(nn.Module):
+class DotCompressScoringModel(nn.Module):  
     def __init__(self, input_dim: int, hidden_dims: List[int], act='gelu'):
         super(DotCompressScoringModel, self).__init__()
         self.dot_compress_weight = nn.Parameter(torch.empty(2, input_dim // 2))
@@ -54,24 +54,24 @@ class DotCompressScoringModel(nn.Module):
         self.output_layer = MLP(self.dims, apply_layernorm=True, elemwise_affine=True)
     
     def forward(self, set_embeddings, item_embeddings):
-        all_embeddings = torch.stack([set_embeddings, item_embeddings], dim=1)
-        combined_representation = torch.matmul(all_embeddings, torch.matmul(all_embeddings.transpose(1, 2), self.dot_compress_weight) + self.dot_compress_bias).flatten(1)
-        output = self.output_layer(combined_representation)
+        all_embeddings = torch.stack([set_embeddings, item_embeddings], dim=1)  # stack the user and item embeddings as a single vector of 1D
+        combined_representation = torch.matmul(all_embeddings, torch.matmul(all_embeddings.transpose(1, 2), self.dot_compress_weight) + self.dot_compress_bias).flatten(1)  # computes the dot product of (all_embeddings^T * weight matrix) dot all_embeddings, then flatten
+        output = self.output_layer(combined_representation) # pass the output to the MLP
         return output
 
-class TrackSparseNNUserModel(nn.Module):
+class TrackSparseNNUserModel(nn.Module):    # embed the user items 
     def __init__(self,
         num_user_ids,
         num_user_countries,
         num_user_names,
         feat_embed_dim=64,
-        output_embed_dim=128,
+        output_embed_dim=128,   # output embedding
         combine_op='cat',
     ):
         super(TrackSparseNNUserModel, self).__init__()
-        self.id_embeddings = nn.Embedding(num_user_ids, embedding_dim=feat_embed_dim)
-        self.countries_embeddings = nn.Embedding(num_user_countries, embedding_dim=feat_embed_dim)
-        self.user_name_embeddings = nn.Embedding(num_user_names, embedding_dim=feat_embed_dim)
+        self.id_embeddings = nn.Embedding(num_user_ids, embedding_dim=feat_embed_dim)   # embed the user ids
+        self.countries_embeddings = nn.Embedding(num_user_countries, embedding_dim=feat_embed_dim)  # embed the countries
+        self.user_name_embeddings = nn.Embedding(num_user_names, embedding_dim=feat_embed_dim)  # embed the usernames
 
         self.output_embed_dim = output_embed_dim
         self.combine_op = combine_op
@@ -99,7 +99,7 @@ class TrackSparseNNUserModel(nn.Module):
         
         return self.act(self.output_mlp(combined_rep))
 
-class TrackSparseNNItemModel(nn.Module):
+class TrackSparseNNItemModel(nn.Module):    # embed the item features
     def __init__(self,
         num_track_ids,
         num_track_artists,
@@ -111,9 +111,9 @@ class TrackSparseNNItemModel(nn.Module):
         combine_op='cat'
     ):
         super(TrackSparseNNItemModel, self).__init__()
-        self.track_id_embeddings = nn.Embedding(num_track_ids, feat_embed_dim)
-        self.artists_embeddings = nn.Embedding(num_track_artists, feat_embed_dim)
-        self.tags_embeddings = nn.Embedding(num_track_tags, feat_embed_dim)
+        self.track_id_embeddings = nn.Embedding(num_track_ids, feat_embed_dim)  # embed track ids
+        self.artists_embeddings = nn.Embedding(num_track_artists, feat_embed_dim)   # embed artists
+        self.tags_embeddings = nn.Embedding(num_track_tags, feat_embed_dim) # embed tags
         self.dense_transform = nn.Linear(dense_feat_input_dim, feat_embed_dim)
 
         self.output_embed_dim = output_embed_dim
@@ -132,10 +132,7 @@ class TrackSparseNNItemModel(nn.Module):
                              self.act, 
                              nn.Linear(64, output_embed_dim))
 
-    def forward(self, track_ids, track_artists, track_tags, track_names):    #fix this
-
-
-
+    def forward(self, track_ids, track_artists, track_tags, track_names):
         track_id_embeddings = self.track_id_embeddings(track_ids)
         artists_embeddings = self.artists_embeddings(track_artists)
         tags_embeddings = self.tags_embeddings(track_tags)

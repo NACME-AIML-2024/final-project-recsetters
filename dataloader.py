@@ -8,7 +8,8 @@ from tqdm import tqdm
 import os
 from torch.utils.data import DataLoader
 
-from datareader import readmusic
+from apple_datareader import readmusic
+from spotify_data_reader import readmusic
 import pdb
 import pandas as pd
 

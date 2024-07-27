@@ -3,12 +3,10 @@ import requests
 
 
 API_KEY = '5fae7208288b136b5a2306d078847c4f'
-SHARED_SECRET = '00e92aefc3ae823055da97f8865b6e6f'
-APPLICATION_NAME = 'RecSetters'
-REGISTERED_TO = 'noahtekle98'
 
 
-df = pd.read_csv("dataset.csv")
+
+df = pd.read_csv("data_collection/DATASET/spotify_dataset.csv")
 
 specific_columns = ['artists','track_name']
 df_spotify_music=df[specific_columns]
@@ -55,4 +53,4 @@ df_spotify_music = df_spotify_music.reset_index(drop=True)
 
 df_spotify_music = df_spotify_music.drop_duplicates(subset=['artistName', 'trackName'])
 df_spotify_music = df_spotify_music.reset_index(drop=True)
-df_spotify_music.to_csv('spotify_songs.csv', index=False)
+df_spotify_music.to_csv('data_collection/spotify_items.csv', index=False)
