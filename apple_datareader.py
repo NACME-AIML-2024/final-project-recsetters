@@ -33,7 +33,7 @@ df_items_with_ids['id'] = range(1, len(df_items_with_ids) + 1)
 df_users_with_ids['id'] = range(1, len(df_users_with_ids) + 1)
 
 
-def readmusic(df_user, df_items, df_interactions, user_core=5, item_core=5):
+def readmusic(df_user, df_items, df_interactions):
     # Map user names to IDs
     user_name_to_id = {name: user_id for name, user_id in zip(df_user['name'], df_user['id'])}
     df_interactions['user_id'] = df_interactions['username'].map(user_name_to_id)
