@@ -391,19 +391,6 @@ def inference(model,
 
 
 def main(argv):
-    if FLAGS.wandb_logging:
-        wandb.init(project="ColdStartRec", name=FLAGS.run_name, entity="lkp411")
-        wandb.config = {
-            "Batch Size" : FLAGS.batch_size,
-            "Epochs" : FLAGS.epochs,
-            "Learning Rate" : FLAGS.lr,
-            "Margin" : FLAGS.margin,
-            "Warm Threshold" : FLAGS.warm_threshold,
-            "Number of negatives per positive" : FLAGS.num_negatives,
-            "Device" : FLAGS.device
-        }
-
-
     np.random.seed(FLAGS.seed)
     torch.manual_seed(FLAGS.seed)
     random.seed(FLAGS.seed)
