@@ -20,12 +20,18 @@ In this project, the team developed a Two-Tower Collaborative Filtering Model to
 
 ![Two-Tower Model](model_flowchart.png)
 
+![Tow-Tower Detailed Model](detailed_model_flowchart.png)
+
+Our model works along with a Sentence Transformer and user/item embeddings. The results of the model are found by running the main.py file with the appropriate command in step 11 or 15. The results will show a variety of scores. The Hit Rate (HR)@10 is the measure of the test item being in a user's top-k (top-10) list. The Normalized Discounted Cumulative Gain (NDCG)@10 is the metric based on the position of the true item among the top 10 list. This project used the following git repo of a recommendation system on MovieLens and BookCrossing as a reference: [repo](https://github.com/lkp411/BiasedUserHistorySynthesis)
+
 
 
 ## Usage instructions
 <!--
 Give details on how to install fork and install your project. You can get all of the python dependencies for your project by typing `pip3 freeze requirements.txt` on the system that runs your project. Add the generated `requirements.txt` to this repo.
 -->
+NOTE: If you would like to access the completed data collection csv files, follow this [link](https://drive.google.com/drive/folders/1zmNw5xfLJT4QWMbdSXYyBXe1U2TYLTTI?usp=sharing)
+
 1. Fork this repo
 2. Change directories into your project
 3. On the command line, type `pip3 install requirements.txt`
@@ -41,3 +47,4 @@ Give details on how to install fork and install your project. You can get all of
 13. For Spotify, run last_fm_user.py -> spotify_items.py -> spotify_rating.py -> spotify_data_reader.py
 14. Change the dataset flag in main (lines 28 and 256) to 'spotify_tracks'
 15. Run the following command: TOKENIZERS_PARALLELISM=False python3 main.py --dataset=spotify_tracks --dataset_dir=/PATH_TO_DATACOLLECTION/ --device=cpu --batch_size=1024 --print_freq=32 --lr=2e-5 --epochs=5 --margin=1 --num_negatives=20 --warm_threshold=0.2 --num_workers=8
+
