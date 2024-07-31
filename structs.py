@@ -11,7 +11,18 @@ import pdb
 from apple_datareader import df_interactions_processed, df_items_processed, user_data, item_data, sorted_reindexed_interactions_by_key
 from spotify_data_reader import df_interactions_processed, df_items_processed, user_data, item_data, sorted_reindexed_interactions_by_key
 
+''' 
+    In the InteractionGraph we initialize the self. variables for user data, item data, interaction data, and the adjacent matrix.
+    Keywords: 
+        - Edges --> interactions between the user and item data
+        - Cold items --> items that are interacted with the least (in our case, any items with 5 interactions)
+        - Common items --> intersection betweem training, testing and validation
+    We use the train edges to train our model, test and validation to view the performance of the model.
+    We use the intersection of training data with testing and validation to make sure that the model can perform on data that it has seen.
+    We use the bipartite graph to create the nodes of the user and prepare the adjacent matrix for training.
 
+    InteractionGraph prepares the basic framework of functionality for the MusicInteractionGraph
+'''
 class InteractionGraph:
     def __init__(self, user_data, item_data, interaction_data) -> None:
         self.user_data = user_data
@@ -32,6 +43,7 @@ class InteractionGraph:
         print("Average item degree = {}".format(np.mean(self.item_degrees)))
         print("Average user degree = {}".format(np.mean(self.user_degrees)))
 
+        # Make sure the items seen in training are seen in validation and test
         train_val_common_items = training_items.intersection(validation_items)
         train_test_common_items = training_items.intersection(test_items)
 
@@ -41,24 +53,25 @@ class InteractionGraph:
         validation_items = np.array(list(validation_items))
         test_items = np.array(list(test_items))
 
-        num_cold_items_in_val = np.sum(self.is_cold[validation_items])
-        num_cold_items_in_test = np.sum(self.is_cold[test_items])
+        # Check if the items are seen in val and test to help the model understand the patterns 
+        num_cold_items_in_val = np.sum(self.is_cold[validation_items])  # cold items have 5 interactions
+        num_cold_items_in_test = np.sum(self.is_cold[test_items]) # cold items have 5 interactions
 
         print('Number of cold items in validation set = {}'.format(num_cold_items_in_val))
         print('Number of cold items in test set = {}'.format(num_cold_items_in_test))
 
 
     def create_bipartite_graph(self):
-        num_nodes = len(self.user_data) + len(self.item_data) # Num users + num items 
-        self.adj_matrix = scipy.sparse.dok_matrix((num_nodes, num_nodes), dtype=bool)  # TODO: Maybe we can optimize with lower precision data types
+        num_nodes = len(self.user_data) + len(self.item_data) # Num users + num items = size of matrix
+        self.adj_matrix = scipy.sparse.dok_matrix((num_nodes, num_nodes), dtype=bool)   # initialize as empty, will have boolean values of 0 or 1
         
         for edge in self.train_edges:
-            self.adj_matrix[edge[0], edge[1]] = 1
-            self.adj_matrix[edge[1], edge[0]] = 1
+            self.adj_matrix[edge[0], edge[1]] = 1   # Edge of user to item
+            self.adj_matrix[edge[1], edge[0]] = 1   # Edge of item to user
 
-        self.adj_matrix = self.adj_matrix.tocsr()
+        self.adj_matrix = self.adj_matrix.tocsr()   # .toscr(), compress the sparse row and save the non zero elements
     
-    def compute_tail_distribution(self, warm_threshold):
+    def compute_tail_distribution(self, warm_threshold):    # This function is used to store cold items
         self.is_cold = np.zeros((self.adj_matrix.shape[0]), dtype=bool)
         self.start_item_id = len(self.user_data)
 
@@ -71,6 +84,12 @@ class InteractionGraph:
     def create_data_split(self):
         raise NotImplementedError()
 
+''' 
+    MusicInteractionGraph inherits from the InteractionGraph function. It uses a "warm threshold" parameter to determine 
+    the proportion to be used by the tail distribution.
+    The data split method will be using one element of each tuple in our interaction data for testing and another for validation.
+    Then it will create its edges based on that specific split
+'''
 class MusicInteractionGraph(InteractionGraph):
     def __init__(self, user_data, item_data, interaction_data, warm_threshold=0.2) -> None:
         super().__init__(user_data, item_data, interaction_data)
@@ -81,7 +100,7 @@ class MusicInteractionGraph(InteractionGraph):
         self.compute_tail_distribution()
     
     def create_data_split(self):
-            # Leave one out validation - for each user the latest interaction is a test item and the second latest item is the validation item
+            # Leave one out validation
             self.all_edges = set()
             self.train_edges_set = set()
             for user_id in tqdm(self.interaction_data):
@@ -117,3 +136,64 @@ class MusicInteractionGraph(InteractionGraph):
 
 # Initialize the MusicInteractionGraph with the loaded data
 graph = MusicInteractionGraph(user_data, item_data, sorted_reindexed_interactions_by_key, warm_threshold=0.2)
+# Check some of the results
+print("Train edges:\n", graph.train_edges[:15])
+print("Validation edges:\n", graph.validation_edges[:5])
+print("Test edges:\n", graph.test_edges[:5])
+
+print("Adjacency matrix:\n", graph.adj_matrix[:5])
+
+def plot_adjacency_matrix(graph, max_users=100, max_items=100):
+    adj_matrix = graph.adj_matrix[:max_users, :max_items]
+    
+    plt.figure(figsize=(12, 8))
+    plt.spy(adj_matrix, markersize=1)
+    plt.xlabel('Items')
+    plt.ylabel('Users')
+    plt.title('Adjacency Matrix (User-Item Interactions)')
+    plt.show()
+
+def plot_degree_distribution(graph):
+    graph.compute_tail_distribution(warm_threshold=0.2)
+    
+    plt.figure(figsize=(10, 6))
+    plt.hist(graph.item_degrees, bins=30, alpha=0.6, color='b', label='All items')
+    plt.hist(graph.item_degrees[graph.is_cold[len(graph.user_data):]], bins=30, alpha=0.6, color='r', label='Cold items')
+    plt.xlabel('Number of Interactions')
+    plt.ylabel('Number of Items')
+    plt.title('Distribution of Item Interactions')
+    plt.legend()
+    plt.show()
+
+# Visualize the adjacency matrix and degree distribution
+plot_adjacency_matrix(graph)
+plot_degree_distribution(graph)
+
+
+# graph.split_statistics()
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# Sample a smaller subset of interactions for visualization
+sampled_users = random.sample(list(user_data.keys()), 10)  # Sample 10 users
+sampled_items = random.sample(list(item_data.keys()), 50)  # Sample 50 items
+
+sampled_interaction_data = {user: interactions for user, interactions in sorted_reindexed_interactions_by_key.items() if user in sampled_users}
+sampled_edges = [(user, item) for user in sampled_interaction_data for item, _ in sampled_interaction_data[user] if item in sampled_items]
+
+# Plotting the interaction graph using NetworkX
+B = nx.Graph()
+
+# Add nodes with the node attribute "bipartite"
+B.add_nodes_from(sampled_users, bipartite=0)
+B.add_nodes_from(sampled_items, bipartite=1)
+
+# Add edges (interactions)
+B.add_edges_from(sampled_edges)
+
+# Plot the bipartite graph
+pos = nx.drawing.layout.bipartite_layout(B, sampled_users)
+plt.figure(figsize=(10, 8))
+nx.draw(B, pos, with_labels=True, node_color=['skyblue' if node in sampled_users else 'lightgreen' for node in B.nodes()], node_size=500, font_size=10)
+plt.title('Sampled Interaction Graph (Bipartite Layout)')
+plt.show()

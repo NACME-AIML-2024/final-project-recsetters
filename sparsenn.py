@@ -7,7 +7,7 @@ class MLP(nn.Module):   # multi layer perceptron, takes input features. Each nod
     def __init__(self, dims: List[int], add_bias=True, act="gelu", apply_layernorm=False, elemwise_affine=False):   # use gelu activation function
         super().__init__()
         self._activation = self._get_activation(act)    # apply activation function
-        self._apply_layernorm = apply_layernorm
+        self._apply_layernorm = apply_layernorm # normalize the layers
         self._elemwise_affine = elemwise_affine # boolean to determine the normalization of each layer
         self._add_bias = add_bias   # boolean to add bias to each layer
         self._model = self._create_model(dims)
@@ -29,18 +29,14 @@ class MLP(nn.Module):   # multi layer perceptron, takes input features. Each nod
     def _get_activation(self, act):
         if act == 'gelu':
             return nn.GELU()
-        elif act == 'relu':
-            return nn.ReLU()
-        elif act == 'mish':
-            return nn.Mish()
-        elif act == 'tanh':
-            return nn.Tanh()
         else:
             raise NotImplementedError
 
 
     def forward(self, input):
         return self._model(input)
+
+
 
 class DotCompressScoringModel(nn.Module):  
     def __init__(self, input_dim: int, hidden_dims: List[int], act='gelu'):
@@ -65,7 +61,7 @@ class TrackSparseNNUserModel(nn.Module):    # embed the user items
         num_user_countries,
         num_user_names,
         feat_embed_dim=64,
-        output_embed_dim=128,   # output embedding
+        output_embed_dim=128,   
         combine_op='cat',
     ):
         super(TrackSparseNNUserModel, self).__init__()
@@ -105,8 +101,8 @@ class TrackSparseNNItemModel(nn.Module):    # embed the item features
         num_track_artists,
         num_track_tags,
         num_track_names,
-        feat_embed_dim=96,  #64
-        dense_feat_input_dim=384,#326
+        feat_embed_dim=96,  
+        dense_feat_input_dim=384,
         output_embed_dim=192,
         combine_op='cat'
     ):
@@ -114,14 +110,13 @@ class TrackSparseNNItemModel(nn.Module):    # embed the item features
         self.track_id_embeddings = nn.Embedding(num_track_ids, feat_embed_dim)  # embed track ids
         self.artists_embeddings = nn.Embedding(num_track_artists, feat_embed_dim)   # embed artists
         self.tags_embeddings = nn.Embedding(num_track_tags, feat_embed_dim) # embed tags
-        self.dense_transform = nn.Linear(dense_feat_input_dim, feat_embed_dim)
+        self.dense_transform = nn.Linear(dense_feat_input_dim, feat_embed_dim) # turn the higher dimension track names into a lower dimension
 
         self.output_embed_dim = output_embed_dim
         self.combine_op = combine_op
         self.act = nn.GELU()
 
         self.output_mlp = self._create_output_mlp(4*feat_embed_dim if combine_op == 'cat' else feat_embed_dim, output_embed_dim)
-        
     
     def _create_output_mlp(self, first_layer_dim, output_embed_dim):
         return nn.Sequential(nn.Linear(first_layer_dim, 128), 
@@ -137,9 +132,6 @@ class TrackSparseNNItemModel(nn.Module):    # embed the item features
         artists_embeddings = self.artists_embeddings(track_artists)
         tags_embeddings = self.tags_embeddings(track_tags)
         dense_embeddings = self.act(self.dense_transform(track_names))
-
-
-
 
         combined_rep = torch.cat([track_id_embeddings, artists_embeddings, tags_embeddings, dense_embeddings], dim=1) if self.combine_op == 'cat' else \
             track_id_embeddings + artists_embeddings + tags_embeddings + dense_embeddings
