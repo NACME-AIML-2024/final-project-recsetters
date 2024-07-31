@@ -16,9 +16,11 @@ Developed by:
 - [Jonathan Haile](https://github.com/jonathanhaile1) - `Computer Science and Business Administration` - `University of Southern California` 
 
 ## Description
-<!--
-Give a short description on what your project accomplishes and what tools is uses. In addition, you can drop screenshots directly into your README file to add them to your README. Take these from your presentations.
--->
+In this project, the team developed a Two-Tower Collaborative Filtering Model to create a recommendation system for music. The team used Last.Fm's API and an Apple Music and Spotify dataset from Kaggle to perform the experiments. The model is a collaborative filtering model, which uses the interactions of all users determine which songs are interacted with and determine a score for the predicted song. 
+
+![Two-Tower Model](model_flowchart.png)
+
+
 
 ## Usage instructions
 <!--
@@ -30,5 +32,12 @@ Give details on how to install fork and install your project. You can get all of
 4. Create a .env file in the data_collection directory
 5. Add the following line, with your Last Fm Api Key: LASTFM_API_KEY=YOUR_API_KEY
 6. Add ".env" to .gitignore
-7. pip install python-dotenv
+7. pip install python-dotenv in your environment
 8. Download [Apple Music Dataset](https://www.kaggle.com/datasets/kanchana1990/apple-music-dataset-10000-tracks-uncovered) into data_collection/DATASET
+9. For Apple Music, run last_fm_user.py -> apple_items.py -> apple_rating.py -> apple_datareader.py
+10. Change the dataset flag in main (lines 28 and 256) to 'apple_tracks'
+11. Run the following command: TOKENIZERS_PARALLELISM=False python3 main.py --dataset=apple_tracks --dataset_dir=/PATH_TO_DATACOLLECTION/ --device=cpu --batch_size=1024 --print_freq=32 --lr=2e-5 --epochs=5 --margin=1 --num_negatives=20 --warm_threshold=0.2 --num_workers=8
+12. Download [Spotify Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset) into data_collection/DATASET
+13. For Spotify, run last_fm_user.py -> spotify_items.py -> spotify_rating.py -> spotify_data_reader.py
+14. Change the dataset flag in main (lines 28 and 256) to 'spotify_tracks'
+15. Run the following command: TOKENIZERS_PARALLELISM=False python3 main.py --dataset=spotify_tracks --dataset_dir=/PATH_TO_DATACOLLECTION/ --device=cpu --batch_size=1024 --print_freq=32 --lr=2e-5 --epochs=5 --margin=1 --num_negatives=20 --warm_threshold=0.2 --num_workers=8

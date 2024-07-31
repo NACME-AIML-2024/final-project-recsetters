@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("dataset_dir", 'PATH/TO/DATASETS', "directory to store and load datasets from")
-flags.DEFINE_string("dataset", "tracks", "Dataset to use")  # apple_tracks or spotify_tracks
+flags.DEFINE_string("dataset", "apple_tracks", "Dataset to use")  # Change to apple_tracks or spotify_tracks here and in line 256
 flags.DEFINE_string("device", "cpu", "Specify whether to use the CPU or GPU")
 flags.DEFINE_integer("batch_size", 64, "Batch Size")
 flags.DEFINE_integer("item_inference_batch_size", 512, "Batch size to load items when computing all item representations before inference")
@@ -38,12 +38,10 @@ flags.DEFINE_float("warm_threshold", 0.2, "Fraction of warm items")
 flags.DEFINE_integer("num_negatives", 20, "Number of negative samples per positive")
 flags.DEFINE_integer("num_workers", 16, "Number of dataloader processes")
 flags.DEFINE_integer("seed", 0, "Random seed for all modules")
-flags.DEFINE_string("best_model_name", "best_model.pt", "File name of the best model")
-flags.DEFINE_list("fanouts", [10,10], "comma separated list of fanouts")
 flags.DEFINE_bool("in_batch_negs", False, "Whether or not to sample negatives from within the batch")
 flags.DEFINE_string("run_name", "Run0", "Name of the run to log in wandb")
 flags.DEFINE_bool("decay_lr", False, "Whether or not to decay LR")
-flags.DEFINE_bool("wandb_logging", False, "Whether or not to log metrics to wandb")
+
 
 
 def batch_to_device_tracks(user_feats, item_feats, device):
@@ -156,9 +154,9 @@ def train_spotify_tracks():
     df_interactions = df_interactions.drop('song_summary', axis=1)
 
     df_interactions = df_interactions.rename(columns={
-    'name': 'username',      # No change needed here
-    'trackName': 'track_name',   # Rename 'track_name' to 'song_name'
-    'date_time': 'date_time'     # Rename 'date_time' to 'timestamp'
+    'name': 'username',      
+    'trackName': 'track_name',   # Rename 'track_name' to 'trackName'
+    'date_time': 'date_time'     # Rename 'date_time' to 'date_time'
     })
     df_users_with_ids = pd.read_csv('data_collection/user.csv')
     df_items_with_ids = pd.read_csv('data_collection/spotify_items.csv')
@@ -340,8 +338,7 @@ def inference(model,
             candidate_items = candidate_items.cpu().numpy() #here
             true_idx = np.argwhere(candidate_items == true_item).reshape(-1)[0]
 
-            # topk_idxs indexes into candidate items to give the reindexed item IDs of the top K
-            # those reindexed topK ids need to be converted back to their original IDs before looking up their features
+            
             topk_reindexed_ids = torch.as_tensor(candidate_items[topk_idxs], dtype=torch.int64, device=item_representations.device)
             topk_reindexed_ids_per_user_copy = torch.as_tensor(candidate_items[topk_idxs], dtype=torch.int64)
 
