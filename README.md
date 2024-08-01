@@ -7,6 +7,13 @@ Name of your teams' final project
 # Music Recommendation System with Deep Learning
 ## [National Action Council for Minorities in Engineering(NACME)](https://www.nacme.org) Artificial Intelligence - Machine Learning (AIML) Intensive Summer Bootcamp at the [University of Southern California](https://viterbischool.usc.edu)
 
+## Sponsors
+| Apple | NACME | USC |
+|--------|--------|--------|
+| ![Apple](apple_logo.png) | ![NACME](nacme_logo.png) | ![USC](usc_logo.png) |
+
+We would personally like to thank the Apple NACME AIML Bootcamp program directors, our professor Dr. Corey Baker, and our guide Abdulla Alshabanah for giving us the opportunity to perform this research in an area that we are deeply interested in. Their support and guidance have been invaluable throughout the course of this project, and their dedication to fostering a learning environment has significantly contributed to our growth and development in the field of artificial intelligence and machine learning. Thank you for providing us with this incredible opportunity to explore and innovate.
+
 <!--
 List all of the members who developed the project and
 link to each members respective GitHub profile
