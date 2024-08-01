@@ -8,11 +8,24 @@ Name of your teams' final project
 ## [National Action Council for Minorities in Engineering(NACME)](https://www.nacme.org) Artificial Intelligence - Machine Learning (AIML) Intensive Summer Bootcamp at the [University of Southern California](https://viterbischool.usc.edu)
 
 ## Sponsors
-| Apple | NACME | USC |
-|--------|--------|--------|
-| ![Apple](apple_logo.png) | ![NACME](nacme_logo.png) | ![USC](usc_logo.png) |
+<div style="display: flex; justify-content: center;">
 
-We would personally like to thank the Apple NACME AIML Bootcamp program directors, our professor Dr. Corey Baker, and our guide Abdulla Alshabanah for giving us the opportunity to perform this research in an area that we are deeply interested in. Their support and guidance have been invaluable throughout the course of this project, and their dedication to fostering a learning environment has significantly contributed to our growth and development in the field of artificial intelligence and machine learning. Thank you for providing us with this incredible opportunity to explore and innovate.
+<table style="border-collapse: collapse; text-align: center;">
+  <tr>
+    <td><img src="apple_logo.png" width="200" height="200"></td>
+    <td><img src="nacme_logo.png" width="200" height="200"></td>
+    <td><img src="usc_logo.png" width="300" height="200"></td>
+  </tr>
+  <tr>
+    <td>Apple</td>
+    <td>NACME</td>
+    <td>USC</td>
+  </tr>
+</table>
+
+</div>
+
+We would personally like to thank the Apple NACME AIML Bootcamp program directors, our professor Dr. Corey Baker, our guide Abdulla Alshabanah, our PI Murali Annavaram for giving us the opportunity to perform this research in an area that we are deeply interested in. Their support and guidance have been invaluable throughout the course of this project, and their dedication to fostering a learning environment has significantly contributed to our growth and development in the field of artificial intelligence and machine learning. Thank you for providing us with this incredible opportunity to explore and innovate.
 
 <!--
 List all of the members who developed the project and
@@ -42,6 +55,16 @@ With this code, we created our base model which uses song name as the essential 
 1. Song Summaries for our Apple Music and Spotify Datasets provided by an LLM (Groq API)
 2. Truncated Lyrics for both of the item Datasets, we will be using the first 25 truncated words of each song (Lyrics OVH API)
 
+## Our Paper
+Read our [paper](https://turquoise-carlynn-39.tiiny.site/):
+<table align="center" style="background-color: white; border-collapse: collapse;">
+  <tr>
+    <td align="center" style="padding: 10px; border: none;">
+      <img src="Recommender_Paper-4.pdf" alt="paper" width="499">
+    </td>
+  </tr>
+</table>
+
 ## Usage instructions
 <!--
 Give details on how to install fork and install your project. You can get all of the python dependencies for your project by typing `pip3 freeze requirements.txt` on the system that runs your project. Add the generated `requirements.txt` to this repo.
@@ -63,4 +86,10 @@ NOTE: If you would like to access the completed data collection csv files as wel
 13. For Spotify, run last_fm_user.py -> spotify_items.py -> spotify_rating.py -> spotify_data_reader.py
 14. Change the dataset flag in main (lines 28 and 256) to 'spotify_tracks'
 15. Run the following command: TOKENIZERS_PARALLELISM=False python3 main.py --dataset=spotify_tracks --dataset_dir=/PATH_TO_DATACOLLECTION/ --device=cpu --batch_size=1024 --print_freq=32 --lr=2e-5 --epochs=5 --margin=1 --num_negatives=20 --warm_threshold=0.2 --num_workers=8
+
+## Sources
+1. Play music, find songs, and discover artists. Last.fm. (n.d.). ![Last.fm](https://www.last.fm/) 
+2. Groq is fast ai inference. Groq is Fast AI Inference. (n.d.-a). ![Groq](https://groq.com/?_gl=1%2A1n32j2o%2A_ga%2AMTA3MTY1MTQzNS4xNzIxOTQ4ODc4%2A_ga_4TD0X2GEZG%2AMTcyMjQ3MzI1Ni4zLjEuMTcyMjQ3MzI2Mi41NC4wLjA) 
+3. He, X., Liao, L., Zhang, H., Nie, L., Hu, X., & Chua, T.-S. (2017, Summer 26). Neural collaborative filtering. Neural Collaborative Filtering. ![Paper](https://arxiv.org/pdf/1708.05031) 
+4. Gossi, D., & Gunes, M. (n.d.). Lyric-based music recommendation - department of ... Lyric-Based Music Recommendation. ![Paper](https://www.cs.virginia.edu/~hw5x/Course/TextMining-2019Spring/docs/presentation/bea3ch.pdf)
 
