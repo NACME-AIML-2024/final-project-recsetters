@@ -60,7 +60,9 @@ Read our [paper](https://turquoise-carlynn-39.tiiny.site/):
 <table align="center" style="background-color: white; border-collapse: collapse;">
   <tr>
     <td align="center" style="padding: 10px; border: none;">
-      <img src="Recommender_Paper-4.pdf" alt="paper" width="499">
+      <a href="https://turquoise-carlynn-39.tiiny.site/">
+        <img src="Recommender_Paper-4.pdf" alt="paper preview" width="499">
+      </a>
     </td>
   </tr>
 </table>
