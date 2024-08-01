@@ -18,19 +18,27 @@ Developed by:
 ## Description
 In this project, the team developed a Two-Tower Collaborative Filtering Model to create a recommendation system for music. The team used Last.Fm's API and an Apple Music and Spotify dataset from Kaggle to perform the experiments. The model is a collaborative filtering model, which uses the interactions of all users determine which songs are interacted with and determine a score for the predicted song. 
 
+## Model
+The model works with the aid of a deep learning architecture. It makes use of an MLP and a SparseNN to make predictions on representations of user and item embeddings. If you're interested in viewing the code, we suggest you look at structs.py, and sparsenn.py. 
+
+Below are diagrams showing the basic working of the two-tower MLP model:
+
 ![Two-Tower Model](model_flowchart.png)
 
 ![Tow-Tower Detailed Model](detailed_model_flowchart.png)
 
 Our model works along with a Sentence Transformer and user/item embeddings. The results of the model are found by running the main.py file with the appropriate command in step 11 or 15. The results will show a variety of scores. The Hit Rate (HR)@10 is the measure of the test item being in a user's top-k (top-10) list. The Normalized Discounted Cumulative Gain (NDCG)@10 is the metric based on the position of the true item among the top 10 list. This project used the following git repo of a recommendation system on MovieLens and BookCrossing as a reference: [repo](https://github.com/lkp411/BiasedUserHistorySynthesis)
 
-
+## Further Research
+With this code, we created our base model which uses song name as the essential embedded feature for recommendations. We experimented more with this code and used different item features to observe their results. The other features we worked with were:
+1. Song Summaries for our Apple Music and Spotify Datasets provided by an LLM (Groq API)
+2. Truncated Lyrics for both of the item Datasets, we will be using the first 25 truncated words of each song (Lyrics OVH API)
 
 ## Usage instructions
 <!--
 Give details on how to install fork and install your project. You can get all of the python dependencies for your project by typing `pip3 freeze requirements.txt` on the system that runs your project. Add the generated `requirements.txt` to this repo.
 -->
-NOTE: If you would like to access the completed data collection csv files, follow this [link](https://drive.google.com/drive/folders/1zmNw5xfLJT4QWMbdSXYyBXe1U2TYLTTI?usp=sharing)
+NOTE: If you would like to access the completed data collection csv files as well as the Excel sheet with our data analysis, follow this [link](https://drive.google.com/drive/folders/1zmNw5xfLJT4QWMbdSXYyBXe1U2TYLTTI?usp=sharing)
 
 1. Fork this repo
 2. Change directories into your project
